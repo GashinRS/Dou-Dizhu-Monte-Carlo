@@ -1,11 +1,13 @@
 """
 This agent always plays the smallest possible cards to ensure big combinations aren't wasted
 """
+from custom_agent import CustomAgent
 
 
-class MinAgent(object):
+class MinAgent(CustomAgent):
 
     def __init__(self):
+        super().__init__()
         self.use_raw = False
 
     @staticmethod

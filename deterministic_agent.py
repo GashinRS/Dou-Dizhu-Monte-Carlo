@@ -4,6 +4,8 @@ from rlcard.games.doudizhu.player import DoudizhuPlayer
 from rlcard.games.doudizhu.judger import DoudizhuJudger
 from rlcard.games.doudizhu.utils import cards2str, get_gt_cards
 
+from custom_agent import CustomAgent
+
 JUDGER = DoudizhuJudger([], 0)
 INDICES = {0: {1: 0, 2: 1}, 1: {0: 0, 2: 1}, 2: {0: 0, 1: 1}}
 
@@ -58,19 +60,26 @@ def calc_opponents_playable_hands_with_randomly_generated_hands(state):
     return other_hands_playable_cards
 
 
-class HOPAgent(object):
+def get_state_after_action(env, action):
+
+    pass
+
+
+class DAgent(CustomAgent):
 
     def __init__(self):
+        super().__init__()
         self.use_raw = False
 
-    @staticmethod
-    def step(state):
+    def step(self, state):
         """  Predict the action given the curent state in gerenerating training data.
         Args:
             state (dict): An dictionary that represents the current state
         Returns:
             action (int): The action predicted (randomly chosen) by the random agent
         """
+        test = self.env
+
         calc_opponents_playable_hands_with_randomly_generated_hands(state)
         legal_actions = list(state['legal_actions'].keys())
         if len(legal_actions) == 1:
