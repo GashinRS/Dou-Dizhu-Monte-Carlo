@@ -1,7 +1,7 @@
 """
 This agent always plays the smallest possible cards to ensure big combinations aren't wasted
 """
-from agents.custom_agent import CustomAgent
+from src.agents.custom_agent import CustomAgent
 
 
 class MinAgent(CustomAgent):
