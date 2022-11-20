@@ -3,9 +3,9 @@ from rlcard.agents import RandomAgent
 import numpy as np
 
 from custom_env import CustomEnv
-from custom_random_agent import CustomRandomAgent
-from deterministic_agent import DAgent
-from min_agent import MinAgent
+from agents.custom_random_agent import CustomRandomAgent
+from agents.deterministic_agent import DAgent
+from agents.min_agent import MinAgent
 
 
 def main():
