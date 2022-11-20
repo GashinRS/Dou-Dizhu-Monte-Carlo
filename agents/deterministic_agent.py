@@ -68,7 +68,6 @@ def calc_opponents_playable_hands_with_randomly_generated_hands(state):
 
 
 def simulate_rollouts(env, state, rollout_depth):
-    handsize = len(env.game.players[0].current_hand)
     other_players_index = OTHER_PLAYERS[env.game.state['self']]
 
     other_hands = []
@@ -105,7 +104,7 @@ class DAgent(CustomAgent):
         Returns:
             action (int): The action predicted (randomly chosen) by the random agent
         """
-        score = get_env_after_action(self.env, state, self.rollout_depth)
+        score = simulate_rollouts(self.env, state, self.rollout_depth)
 
         calc_opponents_playable_hands_with_randomly_generated_hands(state)
         legal_actions = list(state['legal_actions'].keys())
