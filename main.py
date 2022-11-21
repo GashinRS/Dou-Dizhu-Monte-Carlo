@@ -21,24 +21,22 @@ def main():
 
     device = get_device()
 
-    agent_peasant1 = torch.load("experiments/dmc_result/doudizhu/1_1052800.pth", map_location=device)
-    agent_peasant1.set_device(device)
+    dmc_peasant1 = torch.load("experiments/dmc_result/doudizhu/1_1052800.pth", map_location=device)
+    dmc_peasant1.set_device(device)
 
-    agent_peasant2 = torch.load("experiments/dmc_result/doudizhu/2_1052800.pth", map_location=device)
-    agent_peasant2.set_device(device)
+    dmc_peasant2 = torch.load("experiments/dmc_result/doudizhu/2_1052800.pth", map_location=device)
+    dmc_peasant2.set_device(device)
 
-    agent_landlord = torch.load("experiments/dmc_result/doudizhu/0_1052800.pth", map_location=device)
-    agent_landlord.set_device(device)
+    dmc_landlord = torch.load("experiments/dmc_result/doudizhu/0_1052800.pth", map_location=device)
+    dmc_landlord.set_device(device)
 
     # env.set_agents([agent_landlord, agent_peasant1, agent_peasant2])
 
     # env.set_agents([agent_landlord, MinAgent(), MinAgent()])
 
-    env.set_agents([MinAgent(), agent_peasant1, agent_peasant2])
+    env.set_agents([MinAgent(), dmc_peasant1, dmc_peasant2])
 
-    #
-    # env.set_agents([DAgent(),
-    #                 MinAgent(), CustomRandomAgent(num_actions=env.num_actions)])
+    # env.set_agents([DAgent(), MinAgent(), CustomRandomAgent(num_actions=env.num_actions)])
 
     scores = np.array([0, 0, 0])
     for i in range(100):
