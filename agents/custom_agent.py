@@ -5,3 +5,6 @@ class CustomAgent:
 
     def set_env(self, environment):
         self.env = environment
+
+    def step_without_simulation(self, state):
+        return min(list(state['legal_actions'].keys()))

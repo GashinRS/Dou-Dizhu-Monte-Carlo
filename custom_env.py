@@ -8,7 +8,7 @@ from rlcard.games.doudizhu.game import DoudizhuGame
 class CustomEnv(DoudizhuEnv, ABC):
 
     def __init__(self):
-        super().__init__({'allow_step_back': True, 'seed': None})
+        super().__init__({'allow_step_back': True, 'seed': 42})
 
     def run(self, is_training=False):
         """
@@ -52,3 +52,38 @@ class CustomEnv(DoudizhuEnv, ABC):
         payoffs = self.get_payoffs()
 
         return trajectories, payoffs
+
+    def run_for_depth(self, rollout_depth, state, player_id):
+        """
+        Runs the env with a fixed rollout depth for simulation purposes
+        """
+        trajectories = [[] for _ in range(self.num_players)]
+
+        # Loop to play the game
+        trajectories[player_id].append(state)
+        depth = 0
+        while not self.is_over() and depth < rollout_depth:
+            depth += 1
+
+            # Agent plays
+            action = self.agents[player_id].step_without_simulation(state)
+
+            # Environment steps
+            next_state, next_player_id = self.step(action, self.agents[player_id].use_raw)
+            # Save action
+            trajectories[player_id].append(action)
+
+            # Set the state and player
+            state = next_state
+            player_id = next_player_id
+
+            # Save state.
+            if not self.game.is_over():
+                trajectories[player_id].append(state)
+
+        # Add a final state to all the players
+        for player_id in range(self.num_players):
+            state = self.get_state(player_id)
+            trajectories[player_id].append(state)
+
+        return depth

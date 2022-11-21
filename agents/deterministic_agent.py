@@ -8,9 +8,10 @@ from agents.custom_agent import CustomAgent
 
 JUDGER = DoudizhuJudger([], 0)
 INDICES = {0: {1: 0, 2: 1}, 1: {0: 0, 2: 1}, 2: {0: 0, 1: 1}}
+OTHER_PLAYERS = {0: [1, 2], 1: [0, 2], 2: [0, 1]}
 
 
-def calc_opponents_playable_hands_with_randomly_generated_hands(state):
+def generate_random_hands_for_opponents(state):
     other_card_amount = state['raw_obs']['num_cards_left'].copy()
     other_card_amount.pop(state['raw_obs']['self'])
 
@@ -18,7 +19,7 @@ def calc_opponents_playable_hands_with_randomly_generated_hands(state):
     remaining_cards = list(state['raw_obs']['others_hand'])
     np.random.shuffle(remaining_cards)
     other_hands_strings = [remaining_cards[:other_card_amount[0]],
-                           remaining_cards[other_card_amount[1]:]]
+                           remaining_cards[other_card_amount[0]:]]
 
     other_hands_cards = [[], []]
     for i in range(2):
@@ -34,6 +35,12 @@ def calc_opponents_playable_hands_with_randomly_generated_hands(state):
         for card in other_hands_strings[i]:
             # the card's suit doesn't matter for determining a hand's decompositions
             other_hands_cards[i].append(Card('S', card))
+
+    return other_hands_cards
+
+
+def calc_opponents_playable_hands_with_randomly_generated_hands(state):
+    other_hands_cards = generate_random_hands_for_opponents(state)
 
     # generate possible plays from the other players
     trace = state['raw_obs']['trace']
@@ -60,16 +67,35 @@ def calc_opponents_playable_hands_with_randomly_generated_hands(state):
     return other_hands_playable_cards
 
 
-def get_env_after_action(env, action):
+def simulate_rollouts(env, state, rollout_depth):
+    other_players_index = OTHER_PLAYERS[env.game.state['self']]
 
-    pass
+    other_hands = []
+    other_hands_random = generate_random_hands_for_opponents(state)
+    for i in range(2):
+        other_hands.append(env.game.players[other_players_index[i]].current_hand)
+        env.game.players[other_players_index[i]].set_current_hand(other_hands_random[i])
+
+    rollout_depth = env.run_for_depth(rollout_depth, state, env.game.state['self'])
+    # TODO calc game score here
+    score = 0
+
+    # revert the env back to before the simulation
+    for _ in range(rollout_depth):
+        env.step_back()
+
+    for i in range(2):
+        env.game.players[other_players_index[i]].set_current_hand(other_hands[i])
+    return score
 
 
 class DAgent(CustomAgent):
 
-    def __init__(self):
+    def __init__(self, env, rollout_depth):
         super().__init__()
         self.use_raw = False
+        self.set_env(env)
+        self.rollout_depth = rollout_depth
 
     def step(self, state):
         """  Predict the action given the curent state in gerenerating training data.
@@ -78,7 +104,7 @@ class DAgent(CustomAgent):
         Returns:
             action (int): The action predicted (randomly chosen) by the random agent
         """
-        test = self.env
+        score = simulate_rollouts(self.env, state, self.rollout_depth)
 
         calc_opponents_playable_hands_with_randomly_generated_hands(state)
         legal_actions = list(state['legal_actions'].keys())
