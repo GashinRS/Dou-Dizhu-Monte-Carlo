@@ -28,3 +28,20 @@ Saving logs' fields to experiments/dmc_result/doudizhu/fields.csv
 Updated log fields: ['_tick', '_time', 'frames', 'mean_episode_return_0', 'loss_0', 'mean_episode_return_1', 'loss_1', 'mean_episode_return_2', 'loss_2']
 Updated log fields: ['_tick', '_time', 'frames', 'mean_episode_return_0', 'loss_0', 'mean_episode_return_1', 'loss_1', 'mean_episode_return_2', 'loss_2']
 Updated log fields: ['_tick', '_time', 'frames', 'mean_episode_return_0', 'loss_0', 'mean_episode_return_1', 'loss_1', 'mean_episode_return_2', 'loss_2']
+Saving logs data to experiments/dmc_result/doudizhu/logs.csv
+Saving logs' fields to experiments/dmc_result/doudizhu/fields.csv
+Path to log file already exists. New data will be appended.
+Found log directory: experiments/dmc_result/doudizhu
+Saving arguments to experiments/dmc_result/doudizhu/meta.json
+Path to meta file already exists. Not overriding meta.
+Saving messages to experiments/dmc_result/doudizhu/out.log
+Path to message file already exists. New data will be appended.
+Saving logs data to experiments/dmc_result/doudizhu/logs.csv
+Saving logs data to experiments/dmc_result/doudizhu/logs.csv
+Saving logs' fields to experiments/dmc_result/doudizhu/fields.csv
+Saving logs' fields to experiments/dmc_result/doudizhu/fields.csv
+Path to log file already exists. New data will be appended.
+Path to log file already exists. New data will be appended.
+Saving logs data to experiments/dmc_result/doudizhu/logs.csv
+Saving logs' fields to experiments/dmc_result/doudizhu/fields.csv
+Path to log file already exists. New data will be appended.

@@ -15,31 +15,61 @@ from rlcard.utils import (
 
 
 def main():
-
     # env = CustomEnv()
     env = rlcard.make('doudizhu', {'allow_step_back': True})
 
     device = get_device()
 
-    dmc_peasant1 = torch.load("experiments/dmc_result/doudizhu/1_1052800.pth", map_location=device)
+    dmc_peasant1 = torch.load("experiments/dmc_result/doudizhu/1_5996800.pth", map_location=device)
     dmc_peasant1.set_device(device)
 
-    dmc_peasant2 = torch.load("experiments/dmc_result/doudizhu/2_1052800.pth", map_location=device)
+    dmc_peasant2 = torch.load("experiments/dmc_result/doudizhu/2_5996800.pth", map_location=device)
     dmc_peasant2.set_device(device)
 
-    dmc_landlord = torch.load("experiments/dmc_result/doudizhu/0_1052800.pth", map_location=device)
+    dmc_landlord = torch.load("experiments/dmc_result/doudizhu/0_5996800.pth", map_location=device)
     dmc_landlord.set_device(device)
 
-    # env.set_agents([agent_landlord, agent_peasant1, agent_peasant2])
+    dqn_agent = torch.load("experiments/doudizhu_dqn/model20000.pth")
 
-    # env.set_agents([agent_landlord, MinAgent(), MinAgent()])
+    #random vs random vs random
+    # env.set_agents([CustomRandomAgent(num_actions=env.num_actions), CustomRandomAgent(num_actions=env.num_actions),
+    #                 CustomRandomAgent(num_actions=env.num_actions)])
 
-    env.set_agents([MinAgent(), dmc_peasant1, dmc_peasant2])
+    # random vs random vs random
+    # env.set_agents([CustomRandomAgent(num_actions=env.num_actions), MinAgent(), MinAgent()])
 
-    # env.set_agents([DAgent(), MinAgent(), CustomRandomAgent(num_actions=env.num_actions)])
+    # dmc vs dmc vs dmc
+    # env.set_agents([dmc_landlord, dmc_peasant1, dmc_peasant2])
+
+    # dmc vs min_agents
+    # env.set_agents([dmc_landlord, MinAgent(), MinAgent()])
+
+    # min_agent vs dmcs
+    # env.set_agents([MinAgent(), dmc_peasant1, dmc_peasant2])
+
+    # dmc vs randoms
+    # env.set_agents(
+    #     [dmc_landlord, CustomRandomAgent(num_actions=env.num_actions), CustomRandomAgent(num_actions=env.num_actions)])
+
+    # random vs dmcs
+    # env.set_agents([CustomRandomAgent(num_actions=env.num_actions), dmc_peasant1, dmc_peasant2])
+
+    # dqn vs randoms
+    # env.set_agents(
+    #     [dqn_agent, CustomRandomAgent(num_actions=env.num_actions), CustomRandomAgent(num_actions=env.num_actions)])
+
+    # dqn vs dmcs
+    # env.set_agents([dqn_agent, dmc_peasant1, dmc_peasant2])
+
+    # random vs dqns
+    # env.set_agents(
+    #     [CustomRandomAgent(num_actions=env.num_actions), dqn_agent, CustomRandomAgent(num_actions=env.num_actions)])
+
+    # dqn vs min_agents
+    env.set_agents([dqn_agent, MinAgent(), MinAgent()])
 
     scores = np.array([0, 0, 0])
-    for i in range(100):
+    for i in range(1000):
         trajectories, payoffs = env.run()
         scores = np.add(scores, payoffs)
         # print("==========")
