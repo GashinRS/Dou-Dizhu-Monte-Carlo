@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from custom_env import CustomEnv
 from agents.custom_random_agent import CustomRandomAgent
-from agents.deterministic_agent import DAgent
+from agents.deterministic_agent import DAgent, generate_smart_hands_for_opponents
 from agents.min_agent import MinAgent
 import matplotlib.pyplot as plt
 from rlcard.utils import (
@@ -15,7 +15,22 @@ from rlcard.utils import (
 
 
 def main():
-    pass
+    # env = CustomEnv()
+    # env.set_agents([DAgent(env, 2),
+    #                 MinAgent(), CustomRandomAgent(num_actions=env.num_actions)])
+    #
+    # scores = np.array([0, 0, 0])
+    # for i in range(100):
+    #     trajectories, payoffs = env.run()
+    #     scores = np.add(scores, payoffs)
+    # print(scores)
+    test_generate_smart_hands_for_opponents()
+
+
+def test_generate_smart_hands_for_opponents():
+    state = {'raw_obs': {'num_cards_left': [2, 2, 2], 'self': 0, 'current_hand': '34',
+                         'others_hand': 'B678', 'trace': [(1, "R")]}}
+    generate_smart_hands_for_opponents(state)
 
 
 def test_game(agent_landlord, agent_peasant1, agent_peasant2):

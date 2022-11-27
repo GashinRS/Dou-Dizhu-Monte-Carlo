@@ -11,16 +11,7 @@ INDICES = {0: {1: 0, 2: 1}, 1: {0: 0, 2: 1}, 2: {0: 0, 1: 1}}
 OTHER_PLAYERS = {0: [1, 2], 1: [0, 2], 2: [0, 1]}
 
 
-def generate_random_hands_for_opponents(state):
-    other_card_amount = state['raw_obs']['num_cards_left'].copy()
-    other_card_amount.pop(state['raw_obs']['self'])
-
-    # shuffle the remaining cards of the other players and distribute them
-    remaining_cards = list(state['raw_obs']['others_hand'])
-    np.random.shuffle(remaining_cards)
-    other_hands_strings = [remaining_cards[:other_card_amount[0]],
-                           remaining_cards[other_card_amount[0]:]]
-
+def make_hand(other_hands_strings):
     other_hands_cards = [[], []]
     for i in range(2):
         # remove the jokers from string of cards because the jokers have a different initialization for Card
@@ -35,8 +26,51 @@ def generate_random_hands_for_opponents(state):
         for card in other_hands_strings[i]:
             # the card's suit doesn't matter for determining a hand's decompositions
             other_hands_cards[i].append(Card('S', card))
-
     return other_hands_cards
+
+
+def generate_smart_hands_for_opponents(state):
+    pid = state['raw_obs']['self']  # player id
+    other_players = OTHER_PLAYERS[pid]
+    other_card_amount = state['raw_obs']['num_cards_left'].copy()
+    other_card_amount.pop(pid)
+    remaining_cards = list(state['raw_obs']['others_hand']).copy()
+
+    current_hand = state['raw_obs']['current_hand']
+    hasR = "R" in current_hand
+    hasB = "B" in current_hand
+
+    other_hands_strings = [[], []]
+
+    for play in state['raw_obs']['trace']:
+        if play[0] != pid:
+            if not hasR and "R" == play[1] and "B" in remaining_cards:
+                other_hands_strings[(INDICES[pid][play[0]] + 1) % 2].append("B")
+                remaining_cards.remove("B")
+                other_card_amount[(INDICES[pid][play[0]] + 1) % 2] -= 1
+            elif not hasB and "B" == play[1] and "R" in remaining_cards:
+                other_hands_strings[(INDICES[pid][play[0]] + 1) % 2].append("R")
+                remaining_cards.remove("R")
+                other_card_amount[(INDICES[pid][play[0]] + 1) % 2] -= 1
+
+    np.random.shuffle(remaining_cards)
+    other_hands_strings[0].extend(remaining_cards[:other_card_amount[0]])
+    other_hands_strings[1].extend(remaining_cards[other_card_amount[0]:])
+
+    return make_hand(other_hands_strings)
+
+
+def generate_random_hands_for_opponents(state):
+    other_card_amount = state['raw_obs']['num_cards_left'].copy()
+    other_card_amount.pop(state['raw_obs']['self'])
+
+    # shuffle the remaining cards of the other players and distribute them
+    remaining_cards = list(state['raw_obs']['others_hand'])
+    np.random.shuffle(remaining_cards)
+    other_hands_strings = [remaining_cards[:other_card_amount[0]],
+                           remaining_cards[other_card_amount[0]:]]
+
+    return make_hand(other_hands_strings)
 
 
 def calc_opponents_playable_hands_with_randomly_generated_hands(state):
