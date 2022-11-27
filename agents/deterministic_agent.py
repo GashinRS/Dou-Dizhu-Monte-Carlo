@@ -93,11 +93,10 @@ class DAgent(CustomAgent):
         self.set_env(env)
         self.rollout_depth = rollout_depth
 
-    def simulate_rollouts(self, state):
+    def simulate_rollouts(self, state, other_hands_random):
         other_players_index = OTHER_PLAYERS[self.env.game.state['self']]
 
         other_hands = []
-        other_hands_random = generate_random_hands_for_opponents(state)
         for i in range(2):
             other_hands.append(self.env.game.players[other_players_index[i]].current_hand)
             self.env.game.players[other_players_index[i]].set_current_hand(other_hands_random[i])
@@ -163,6 +162,7 @@ class DAgent(CustomAgent):
         Returns:
             action (int): The action predicted (randomly chosen) by the random agent
         """
+        other_hands_random = generate_random_hands_for_opponents(state)
 
         # TODO
         """ 
