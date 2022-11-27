@@ -27,7 +27,7 @@ def main():
                     MinAgent(), CustomRandomAgent(num_actions=env.num_actions)])
 
     scores = np.array([0, 0, 0])
-    for i in range(100):
+    for i in range(5):
         trajectories, payoffs = env.run()
         scores = np.add(scores, payoffs)
 

@@ -42,11 +42,11 @@ class CustomEnv(DoudizhuEnv, ABC):
     def run_for_depth(self, rollout_depth, state, player_id):
         """  Runs the env given an action
         Args:
-            state (dict): An dictionary that represents the current state
-        Returns:
             :param rollout_depth: the amount of turns the env is going to run
             :param state: the current state
             :param player_id: the player's id
+        Returns:
+            rollout_depth (int)
         """
         trajectories = [[] for _ in range(self.num_players)]
 
@@ -71,8 +71,6 @@ class CustomEnv(DoudizhuEnv, ABC):
     def run_given_action(self, state, player_id, action):
         """  Runs the env given an action
         Args:
-            state (dict): An dictionary that represents the current state
-        Returns:
             :param action: the id of the action
             :param state: the current state
             :param player_id: the player's id
@@ -104,9 +102,20 @@ class CustomEnv(DoudizhuEnv, ABC):
 
         return trajectories, player_id, state
 
+    # def get_legal_actions_given_hand(self, legal_actions):
+    #     """ Get all legal actions given the raw actions
+    #     Args:
+    #         legal_actions (list(string)): raw legal actions
+    #     Returns:
+    #         legal_actions (dict): a list of legal actions' id
+    #     """
+    #     return {self._ACTION_2_ID[action]: _cards2array(action) for action in legal_actions}
+
     def get_legal_actions_given_hand(self, legal_actions):
         """ Get all legal actions given the raw actions
+        Args:
+            legal_actions (list(string)): raw legal actions
         Returns:
-            legal_actions (list): a list of legal actions' id
+            legal_actions (list(int)): a list of legal actions' id
         """
-        return {self._ACTION_2_ID[action]: _cards2array(action) for action in legal_actions}
+        return [self._ACTION_2_ID[action] for action in legal_actions]

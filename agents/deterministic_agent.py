@@ -164,6 +164,13 @@ class DAgent(CustomAgent):
         """
         other_hands_random = generate_random_hands_for_opponents(state)
 
+        # example of how to use run_given_action
+        # the function has no return value as of yet but this can easily be added depending on what
+        # return values are needed
+        actions = self.calc_opponents_playable_hands_with_randomly_generated_hands(state)
+        self.env.run_given_action(state, self.env.game.state['self'], actions[0][0])
+        self.env.step_back()
+
         # TODO
         """ 
         Selection: select a leaf node from the tree using exploration and exploitation.
@@ -177,7 +184,7 @@ class DAgent(CustomAgent):
         """
         Rollout: Simulate rollout out of a state and return score.
         """
-        score = self.simulate_rollouts(state)
+        score = self.simulate_rollouts(state, other_hands_random)
 
         # TODO
         """
