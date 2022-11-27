@@ -1,7 +1,11 @@
+import functools
+
 import rlcard
 from rlcard.agents import RandomAgent
 import numpy as np
 import torch
+from rlcard.games.doudizhu.utils import doudizhu_sort_str
+
 from custom_env import CustomEnv
 from agents.custom_random_agent import CustomRandomAgent
 from agents.deterministic_agent import DAgent, generate_smart_hands_for_opponents
@@ -12,19 +16,25 @@ from rlcard.utils import (
     set_seed,
     tournament,
 )
+import time
 
 
 def main():
-    # env = CustomEnv()
-    # env.set_agents([DAgent(env, 2),
-    #                 MinAgent(), CustomRandomAgent(num_actions=env.num_actions)])
-    #
-    # scores = np.array([0, 0, 0])
-    # for i in range(100):
-    #     trajectories, payoffs = env.run()
-    #     scores = np.add(scores, payoffs)
-    # print(scores)
-    test_generate_smart_hands_for_opponents()
+    start = time.time()
+
+    env = CustomEnv()
+    env.set_agents([DAgent(env, 2),
+                    MinAgent(), CustomRandomAgent(num_actions=env.num_actions)])
+
+    scores = np.array([0, 0, 0])
+    for i in range(100):
+        trajectories, payoffs = env.run()
+        scores = np.add(scores, payoffs)
+
+    end = time.time()
+
+    print(f"score: {scores}, runtime: {end - start}")
+    # test_generate_smart_hands_for_opponents()
 
 
 def test_generate_smart_hands_for_opponents():
