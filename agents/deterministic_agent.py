@@ -5,6 +5,7 @@ from rlcard.games.doudizhu.judger import DoudizhuJudger
 from rlcard.games.doudizhu.utils import cards2str, get_gt_cards
 
 from agents.custom_agent import CustomAgent
+from agents.min_agent import MinAgent
 
 JUDGER = DoudizhuJudger([], 0)
 INDICES = {0: {1: 0, 2: 1}, 1: {0: 0, 2: 1}, 2: {0: 0, 1: 1}}
@@ -123,6 +124,16 @@ def simulate_rollouts(env, state, rollout_depth):
     return score
 
 
+class Node:
+    """A node in the MCTS tree"""
+    def __init__(self, parent, action):
+        self.parent = parent
+        self.action = action
+        self.children = []
+        self.visits = 0
+        self.value = 0
+
+
 class DAgent(CustomAgent):
 
     def __init__(self, env, rollout_depth):
@@ -138,14 +149,32 @@ class DAgent(CustomAgent):
         Returns:
             action (int): The action predicted (randomly chosen) by the random agent
         """
+
+        # TODO
+        """ 
+        Selection: select a leaf node from the tree using exploration and exploitation.
+        """
+
+        # TODO
+        """
+        Expansion: expand selected node by all possibles plays.
+        """
+
+        """
+        Rollout: Simulate rollout out of a state and return score.
+        """
         score = simulate_rollouts(self.env, state, self.rollout_depth)
 
-        calc_opponents_playable_hands_with_randomly_generated_hands(state)
-        legal_actions = list(state['legal_actions'].keys())
-        if len(legal_actions) == 1:
-            return legal_actions[0]
-        else:
-            return min(legal_actions)
+        # TODO
+        """
+        Back-Propagation: Update visits and scores of nodes on the path. Also stepback state in each iteration.
+        """
+
+        # TODO
+        """
+        temporay zodat het iets kan doen. Moet dus gefixed worden.
+        """
+        return MinAgent().step(state)
 
     def eval_step(self, state):
         """  Predict the action given the current state for evaluation.
