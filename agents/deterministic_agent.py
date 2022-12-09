@@ -192,6 +192,9 @@ class DAgent(CustomAgent):
         Returns:
             action (int): The action predicted (randomly chosen) by the random agent
         """
+
+        self.pid = self.env.get_player_id()
+
         other_hands_random = generate_random_hands_for_opponents(state)
 
         other_players_index = OTHER_PLAYERS[self.env.game.state['self']]
