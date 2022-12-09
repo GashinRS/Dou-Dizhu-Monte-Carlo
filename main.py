@@ -20,21 +20,23 @@ import time
 
 
 def main():
-    start = time.time()
-
-    env = CustomEnv()
-    env.set_agents([DAgent(env, 2),
-                    MinAgent(), CustomRandomAgent(num_actions=env.num_actions)])
-
-    scores = np.array([0, 0, 0])
-    for i in range(5):
-        trajectories, payoffs = env.run()
-        scores = np.add(scores, payoffs)
-
-    end = time.time()
-
-    print(f"score: {scores}, runtime: {end - start}")
+    # start = time.time()
+    #
+    # env = CustomEnv()
+    # env.set_agents([DAgent(env, 2),
+    #                 MinAgent(), CustomRandomAgent(num_actions=env.num_actions)])
+    #
+    # scores = np.array([0, 0, 0])
+    # for i in range(5):
+    #     trajectories, payoffs = env.run()
+    #     scores = np.add(scores, payoffs)
+    #
+    # end = time.time()
+    #
+    # print(f"score: {scores}, runtime: {end - start}")
     # test_generate_smart_hands_for_opponents()
+    # test_DAgent()
+    test_agents()
 
 
 def test_generate_smart_hands_for_opponents():
@@ -43,12 +45,27 @@ def test_generate_smart_hands_for_opponents():
     generate_smart_hands_for_opponents(state)
 
 
-def test_game(agent_landlord, agent_peasant1, agent_peasant2):
+def test_DAgent():
     env = rlcard.make('doudizhu', {'allow_step_back': True})
+    env.set_agents([DAgent(env=env, max_depth=10, num_trees=1, uct_const=1, rollouts=10, default_agent=MinAgent()),
+                    RandomAgent(num_actions=env.num_actions), RandomAgent(num_actions=env.num_actions)])
+
+    trajectories, payoffs = env.run()
+    print(payoffs)
+
+
+def test_game(agent_landlord, agent_peasant1, agent_peasant2, its, random_ps=False, random_ll=False):
+    env = rlcard.make('doudizhu', {'allow_step_back': True})
+
     env.set_agents([agent_landlord, agent_peasant1, agent_peasant2])
+    if random_ps:
+        env.set_agents([agent_landlord, RandomAgent(num_actions=env.num_actions), RandomAgent(num_actions=env.num_actions)])
+    if random_ll:
+        env.set_agents(
+            [RandomAgent(num_actions=env.num_actions), agent_peasant1, agent_peasant2])
 
     scores = np.array([0, 0, 0])
-    for i in range(1000):
+    for i in range(its):
         trajectories, payoffs = env.run()
         scores = np.add(scores, payoffs)
     print(scores)
@@ -63,10 +80,16 @@ def test_agents():
     dmc_landlord = torch.load("experiments/dmc_result/doudizhu/0_5996800.pth", map_location=device)
     dmc_landlord.set_device(device)
 
-    dqn_agent = torch.load("experiments/doudizhu_dqn/model20000.pth")
-    dqn_agent.set_device(device)
+    dqn_landlord = torch.load("experiments/doudizhu_dqn/model_landlord_21000.pth")
+    # dqn_landlord.set_device(device)
 
-    test_game(dqn_agent, MinAgent(), MinAgent())
+    dqn_peasant1 = torch.load("experiments/doudizhu_dqn/model_peasant1_21000.pth")
+    # dqn_peasant1.set_device(device)
+
+    dqn_peasant2 = torch.load("experiments/doudizhu_dqn/model_peasant2_21000.pth")
+    # dqn_peasant2.set_device(device)
+
+    test_game(dqn_landlord, MinAgent(), MinAgent(), 100, random_ll=True)
 
 
 def set_plt(x, y, xname, yname, plotname, output):

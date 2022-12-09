@@ -1,4 +1,5 @@
 import functools
+import random
 
 import numpy as np
 from rlcard.games.base import Card
@@ -78,6 +79,7 @@ def generate_random_hands_for_opponents(state):
 
 class Node:
     """A node in the MCTS tree"""
+
     def __init__(self, parent, action):
         self.parent = parent
         self.action = action
@@ -87,31 +89,59 @@ class Node:
 
 
 class DAgent(CustomAgent):
-    def __init__(self, env, rollout_depth):
+    def __init__(self, env, max_depth, num_trees, uct_const, rollouts, default_agent):
+        from rlcard.games.doudizhu.utils import ACTION_2_ID
+        self.ACTION_2_ID = ACTION_2_ID
         super().__init__()
+        self.pid = None
         self.use_raw = False
         self.set_env(env)
-        self.rollout_depth = rollout_depth
+        self.max_depth = max_depth
+        self.num_trees = num_trees
+        self.uct_const = uct_const
+        self.rollouts = rollouts
+        self.default_agent = default_agent
 
-    def simulate_rollouts(self, state, other_hands_random):
-        other_players_index = OTHER_PLAYERS[self.env.game.state['self']]
+    def simulate_rollouts(self, state):
+        # other_players_index = OTHER_PLAYERS[self.env.game.state['self']]
+        #
+        # other_hands = []
+        # for i in range(2):
+        #     other_hands.append(self.env.game.players[other_players_index[i]].current_hand)
 
-        other_hands = []
-        for i in range(2):
-            other_hands.append(self.env.game.players[other_players_index[i]].current_hand)
-            self.env.game.players[other_players_index[i]].set_current_hand(other_hands_random[i])
+        # rollout_depth = self.env.run_for_depth(self.max_depth, state, self.env.game.state['self'])
 
-        rollout_depth = self.env.run_for_depth(self.rollout_depth, state, self.env.game.state['self'])
+        i = 0
+        while i < self.max_depth and not self.env.game.is_over():
+            state, pid = self.env.step(self.default_agent.step(state))
+            i += 1
+
         # TODO calc game score here
-        score = 0
+        score = self.calculate_score()
 
         # revert the env back to before the simulation
-        for _ in range(rollout_depth):
+        # for _ in range(rollout_depth):
+        #     self.env.step_back()
+
+        for _ in range(i):
             self.env.step_back()
 
-        for i in range(2):
-            self.env.game.players[other_players_index[i]].set_current_hand(other_hands[i])
+        # for i in range(2):
+        #     self.env.game.players[other_players_index[i]].set_current_hand(other_hands[i])
         return score
+
+    def calculate_score(self):
+        if self.env.game.is_over():
+            if self.pid == self.env.game.winner_id:
+                return 100
+            else:
+                return -100
+        else:
+            player = self.env.game.players[self.pid]
+            player_up = self.env.game.players[(player.player_id + 1) % len(self.env.game.players)]
+            player_down = self.env.game.players[(player.player_id - 1) % len(self.env.game.players)]
+            return len(player.current_hand) * 2 - len(player_up.current_hand) - len(player_down.current_hand)
+
 
     def calc_opponents_playable_hands_with_randomly_generated_hands(self, state):
         """  Calculates the legal actions opponents can play with randomly generated hands given the current state
@@ -164,38 +194,85 @@ class DAgent(CustomAgent):
         """
         other_hands_random = generate_random_hands_for_opponents(state)
 
-        # example of how to use run_given_action
-        # the function has no return value as of yet but this can easily be added depending on what
-        # return values are needed
-        actions = self.calc_opponents_playable_hands_with_randomly_generated_hands(state)
-        self.env.run_given_action(state, self.env.game.state['self'], actions[0][0])
-        self.env.step_back()
+        other_players_index = OTHER_PLAYERS[self.env.game.state['self']]
 
-        # TODO
-        """ 
-        Selection: select a leaf node from the tree using exploration and exploitation.
-        """
+        other_hands_real = []
+        for i in range(2):
+            other_hands_real.append(self.env.game.players[other_players_index[i]].current_hand)
+            self.env.game.players[other_players_index[i]].set_current_hand(other_hands_random[i])
 
-        # TODO
-        """
-        Expansion: expand selected node by all possibles plays.
-        """
+        root = Node(None, None)
+        for _ in range(self.rollouts):
+            """ 
+            Selection: select a leaf node from the tree using exploration and exploitation.
+            """
+            node = self.select_node(root)
+
+            """
+            Expansion: expand selected node by all possibles plays.
+            """
+            test_state = self.env.game.get_state(self.env.game.round.current_player)
+            actions = self.env.game.state['actions']
+            for _ in range(self.max_depth):
+                node.children.append(Node(node, random.choice(actions)))
+
+            """
+            Rollout: Simulate rollout out of a state and return score.
+            """
+            node = random.choice(node.children)
+            state, pid = self.env.step(node.action, True)
+            score = self.simulate_rollouts(state)
+
+            """
+            Back-Propagation: Update visits and scores of nodes on the path. Also stepback state in each iteration.
+            """
+            while node.parent is not None:
+                node.visits += 1
+                node.value += score
+                node = node.parent
+                self.env.step_back()
+            node.value += score
+            node.visits += 1
 
         """
-        Rollout: Simulate rollout out of a state and return score.
+        Zet kaarten in de env terug op originele
         """
-        score = self.simulate_rollouts(state, other_hands_random)
+        for i in range(2):
+            self.env.game.players[other_players_index[i]].set_current_hand(other_hands_real[i])
 
-        # TODO
-        """
-        Back-Propagation: Update visits and scores of nodes on the path. Also stepback state in each iteration.
-        """
+        to_play_node = root
+        while len(to_play_node.children) > 0:
+            new_to_play_node = to_play_node.children[0]
+            for child in to_play_node.children:
+                if child.value > new_to_play_node.value:
+                    new_to_play_node = child
+            to_play_node = new_to_play_node
 
-        # TODO
+        return self.ACTION_2_ID[to_play_node.action]
+
+    def uct(self, node):
+        """Upper Confidence Bound for trees formule"""
+        if node.visits > 0 and node.parent is not None:
+            return node.value + 2 * self.uct_const * np.sqrt(2 * np.log(node.parent.visits) / node.visits)
+        else:
+            return np.inf
+
+    def select_node(self, root):
         """
-        temporay zodat het iets kan doen. Moet dus gefixed worden.
+        selects a node using the exploit and explore strategy
+        :param root: root of mcts tree
+        :return: leaf node
         """
-        return MinAgent().step(state)
+        node = root
+        while len(node.children) > 0:
+            newnode = node.children[0]
+            for child in node.children:
+                if self.uct(child) > self.uct(newnode):
+                    newnode = child
+            node = newnode
+            self.env.step(node.action, True)
+            # state = self.env.run_given_action(state, node.action)
+        return node
 
     def eval_step(self, state):
         """  Predict the action given the current state for evaluation.

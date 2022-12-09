@@ -2,6 +2,7 @@ from abc import ABC
 
 from rlcard.envs.doudizhu import DoudizhuEnv, _cards2array
 
+
 class CustomEnv(DoudizhuEnv, ABC):
 
     def __init__(self):
@@ -85,6 +86,7 @@ class CustomEnv(DoudizhuEnv, ABC):
         for player_id in range(self.num_players):
             state = self.get_state(player_id)
             trajectories[player_id].append(state)
+        return state
 
     def set_next_state(self, trajectories, player_id, action):
         # Environment steps
