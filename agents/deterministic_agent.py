@@ -86,6 +86,7 @@ class Node:
         self.children = []
         self.visits = 0
         self.value = 0
+        self.game_over = 1 # 1 if game is not over when doing this action
 
 
 class DAgent(CustomAgent):
@@ -101,6 +102,7 @@ class DAgent(CustomAgent):
         self.uct_const = uct_const
         self.rollouts = rollouts
         self.default_agent = default_agent
+        self.debug = 0
 
     def simulate_rollouts(self, state):
         # other_players_index = OTHER_PLAYERS[self.env.game.state['self']]
@@ -112,6 +114,8 @@ class DAgent(CustomAgent):
         # rollout_depth = self.env.run_for_depth(self.max_depth, state, self.env.game.state['self'])
 
         i = 0
+        self.debug += 1
+        print(self.debug)
         while i < self.max_depth and not self.env.game.is_over():
             state, pid = self.env.step(self.default_agent.step(state))
             i += 1
@@ -140,7 +144,7 @@ class DAgent(CustomAgent):
             player = self.env.game.players[self.pid]
             player_up = self.env.game.players[(player.player_id + 1) % len(self.env.game.players)]
             player_down = self.env.game.players[(player.player_id - 1) % len(self.env.game.players)]
-            return len(player.current_hand) * 2 - len(player_up.current_hand) - len(player_down.current_hand)
+            return len(player_up.current_hand) + len(player_down.current_hand) - (len(player.current_hand) * 2)
 
 
     def calc_opponents_playable_hands_with_randomly_generated_hands(self, state):
@@ -205,7 +209,10 @@ class DAgent(CustomAgent):
             self.env.game.players[other_players_index[i]].set_current_hand(other_hands_random[i])
 
         root = Node(None, None)
+        potatosaladondfireisverysadbecauseiwantedtoeatthepotatosaladandnowicantsadge = 0
         for _ in range(self.rollouts):
+            # print(potatosaladondfireisverysadbecauseiwantedtoeatthepotatosaladandnowicantsadge)
+            potatosaladondfireisverysadbecauseiwantedtoeatthepotatosaladandnowicantsadge += 1
             """ 
             Selection: select a leaf node from the tree using exploration and exploitation.
             """
@@ -214,9 +221,9 @@ class DAgent(CustomAgent):
             """
             Expansion: expand selected node by all possibles plays.
             """
-            test_state = self.env.game.get_state(self.env.game.round.current_player)
             actions = self.env.game.state['actions']
             for _ in range(self.max_depth):
+                # TODO maybe use numpy for optimisation
                 node.children.append(Node(node, random.choice(actions)))
 
             """
@@ -224,6 +231,12 @@ class DAgent(CustomAgent):
             """
             node = random.choice(node.children)
             state, pid = self.env.step(node.action, True)
+
+            while self.env.game.is_over():
+                node.game_over = 0
+                node = random.choice(node.children)
+                state, pid = self.env.step(node.action, True)
+
             score = self.simulate_rollouts(state)
 
             """
@@ -243,20 +256,18 @@ class DAgent(CustomAgent):
         for i in range(2):
             self.env.game.players[other_players_index[i]].set_current_hand(other_hands_real[i])
 
-        to_play_node = root
-        while len(to_play_node.children) > 0:
-            new_to_play_node = to_play_node.children[0]
-            for child in to_play_node.children:
-                if child.value > new_to_play_node.value:
-                    new_to_play_node = child
-            to_play_node = new_to_play_node
+        to_play_node = root.children[0]
+        for child in root.children:
+            if child.value > to_play_node.value:
+                to_play_node = child
 
         return self.ACTION_2_ID[to_play_node.action]
+        # return to_play_node.action
 
     def uct(self, node):
         """Upper Confidence Bound for trees formule"""
         if node.visits > 0 and node.parent is not None:
-            return node.value + 2 * self.uct_const * np.sqrt(2 * np.log(node.parent.visits) / node.visits)
+            return (node.value + 2 * self.uct_const * np.sqrt(2 * np.log(node.parent.visits) / node.visits)) * node.game_over
         else:
             return np.inf
 

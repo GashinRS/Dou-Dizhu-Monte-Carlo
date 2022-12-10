@@ -20,6 +20,7 @@ import time
 
 
 def main():
+    set_seed(69)
     # start = time.time()
     #
     # env = CustomEnv()
@@ -35,8 +36,8 @@ def main():
     #
     # print(f"score: {scores}, runtime: {end - start}")
     # test_generate_smart_hands_for_opponents()
-    # test_DAgent()
-    test_agents()
+    test_DAgent()
+    # test_agents()
 
 
 def test_generate_smart_hands_for_opponents():
@@ -46,9 +47,11 @@ def test_generate_smart_hands_for_opponents():
 
 
 def test_DAgent():
-    env = rlcard.make('doudizhu', {'allow_step_back': True})
+    env = rlcard.make('doudizhu', {'allow_step_back': True, "allow_raw_data": True})
     env.set_agents([DAgent(env=env, max_depth=10, num_trees=1, uct_const=1, rollouts=10, default_agent=MinAgent()),
-                    RandomAgent(num_actions=env.num_actions), RandomAgent(num_actions=env.num_actions)])
+                    # RandomAgent(num_actions=env.num_actions), RandomAgent(num_actions=env.num_actions)
+                    MinAgent(), MinAgent()
+                    ])
 
     trajectories, payoffs = env.run()
     print(payoffs)
