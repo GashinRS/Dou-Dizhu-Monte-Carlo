@@ -58,8 +58,26 @@ def generate_smart_hands_for_opponents(state):
 
             paircards = get_pairs(action[1])
             tripletcards = get_triplets(action[1])
+            paircards_copy = paircards.copy()
 
-            for samecards in [paircards, tripletcards]:
+            # when someone plays higher pairs (we chose for pairs of K, A and 2) it not highly unlikely that they
+            # didn't have a triplet
+            KA2 = []
+            if "K" in paircards_copy:
+                KA2.append("K")
+            if "A" in paircards_copy:
+                KA2.append("A")
+            if "2" in paircards_copy:
+                KA2.append("2")
+
+            for card in KA2:
+                paircards_copy.remove(card)
+                if remaining_cards.count(card) == 2:
+                    other_hands_strings[(INDICES[pid][action[0]] + 1) % 2].append(card)
+                    remaining_cards.remove(card)
+                    other_card_amount[(INDICES[pid][action[0]] + 1) % 2] -= 1
+
+            for samecards in [paircards_copy, tripletcards]:
                 if len(samecards) > 0:
                     # contains the counts of how many cards of the pair/triplet are left in the remaining cards
                     remaining_cards_count = [0] * len(samecards)
@@ -74,6 +92,8 @@ def generate_smart_hands_for_opponents(state):
                                 remaining_cards.remove(samecards[i])
                                 other_card_amount[(INDICES[pid][action[0]] + 1) % 2] -= 1
 
+            # if someone played a triplet paired wit a single card we'll assume he/she has no more cards that are the
+            # same as the single
             singles = []
             if len(tripletcards) > 0 and len(paircards) == 0:
                 for card in tripletcards:
@@ -92,7 +112,7 @@ def generate_smart_hands_for_opponents(state):
     np.random.shuffle(remaining_cards)
     other_hands_strings[0].extend(remaining_cards[:other_card_amount[0]])
     other_hands_strings[1].extend(remaining_cards[other_card_amount[0]:])
-
+    print(other_hands_strings)
     return make_hand(other_hands_strings)
 
 
