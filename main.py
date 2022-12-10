@@ -8,7 +8,7 @@ from rlcard.games.doudizhu.utils import doudizhu_sort_str
 
 from custom_env import CustomEnv
 from agents.custom_random_agent import CustomRandomAgent
-from agents.deterministic_agent import DAgent, generate_smart_hands_for_opponents
+from agents.deterministic_agent import DAgent, generate_smart_hands_for_opponents, get_pairs, get_triplets
 from agents.min_agent import MinAgent
 import matplotlib.pyplot as plt
 from rlcard.utils import (
@@ -20,7 +20,6 @@ import time
 
 
 def main():
-    set_seed(69)
     # start = time.time()
     #
     # env = CustomEnv()
@@ -36,13 +35,28 @@ def main():
     #
     # print(f"score: {scores}, runtime: {end - start}")
     # test_generate_smart_hands_for_opponents()
-    test_DAgent()
-    # test_agents()
+    # test_DAgent()
+
+    test_generate_smart_hands_for_opponents3()
+    # print(get_pairs("3344556"))
+    # print(get_triplets("333444556"))
 
 
 def test_generate_smart_hands_for_opponents():
     state = {'raw_obs': {'num_cards_left': [2, 2, 2], 'self': 0, 'current_hand': '34',
-                         'others_hand': 'B678', 'trace': [(1, "R")]}}
+                         'others_hand': 'R678', 'trace': [(1, "B")]}}
+    generate_smart_hands_for_opponents(state)
+
+
+def test_generate_smart_hands_for_opponents2():
+    state = {'raw_obs': {'num_cards_left': [4, 4, 5], 'self': 0, 'current_hand': '3456',
+                         'others_hand': '899JQKA2B', 'trace': [(2, "777888JQ"), (1, "99")]}}
+    generate_smart_hands_for_opponents(state)
+
+
+def test_generate_smart_hands_for_opponents3():
+    state = {'raw_obs': {'num_cards_left': [4, 4, 5], 'self': 1, 'current_hand': '3456',
+                         'others_hand': '899JQKAAB', 'trace': [(0, "KKK8"), (2, "AA")]}}
     generate_smart_hands_for_opponents(state)
 
 

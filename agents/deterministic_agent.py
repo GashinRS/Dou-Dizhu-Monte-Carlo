@@ -5,7 +5,7 @@ import numpy as np
 from rlcard.games.base import Card
 from rlcard.games.doudizhu.player import DoudizhuPlayer
 from rlcard.games.doudizhu.judger import DoudizhuJudger
-from rlcard.games.doudizhu.utils import cards2str, get_gt_cards, ACTION_2_ID, doudizhu_sort_str
+from rlcard.games.doudizhu.utils import cards2str, get_gt_cards, ACTION_2_ID, doudizhu_sort_str, CARD_RANK_STR_INDEX, CARD_RANK_STR
 
 from agents.custom_agent import CustomAgent
 from agents.min_agent import MinAgent
@@ -35,7 +35,6 @@ def make_hand(other_hands_strings):
 
 def generate_smart_hands_for_opponents(state):
     pid = state['raw_obs']['self']  # player id
-    other_players = OTHER_PLAYERS[pid]
     other_card_amount = state['raw_obs']['num_cards_left'].copy()
     other_card_amount.pop(pid)
     remaining_cards = list(state['raw_obs']['others_hand']).copy()
@@ -57,11 +56,86 @@ def generate_smart_hands_for_opponents(state):
                 remaining_cards.remove("R")
                 other_card_amount[(INDICES[pid][action[0]] + 1) % 2] -= 1
 
+            paircards = get_pairs(action[1])
+            tripletcards = get_triplets(action[1])
+            paircards_copy = paircards.copy()
+
+            # when someone plays higher pairs (we chose for pairs of K, A and 2) it not highly unlikely that they
+            # didn't have a triplet
+            KA2 = []
+            if "K" in paircards_copy:
+                KA2.append("K")
+            if "A" in paircards_copy:
+                KA2.append("A")
+            if "2" in paircards_copy:
+                KA2.append("2")
+
+            for card in KA2:
+                paircards_copy.remove(card)
+                if remaining_cards.count(card) == 2:
+                    other_hands_strings[(INDICES[pid][action[0]] + 1) % 2].append(card)
+                    remaining_cards.remove(card)
+                    other_card_amount[(INDICES[pid][action[0]] + 1) % 2] -= 1
+
+            for samecards in [paircards_copy, tripletcards]:
+                if len(samecards) > 0:
+                    # contains the counts of how many cards of the pair/triplet are left in the remaining cards
+                    remaining_cards_count = [0] * len(samecards)
+
+                    for i, card in enumerate(samecards):
+                        remaining_cards_count[i] = remaining_cards.count(card)
+
+                    for i, count in enumerate(remaining_cards_count):
+                        if count > 0:
+                            for j in range(count):
+                                other_hands_strings[(INDICES[pid][action[0]] + 1) % 2].append(samecards[i])
+                                remaining_cards.remove(samecards[i])
+                                other_card_amount[(INDICES[pid][action[0]] + 1) % 2] -= 1
+
+            # if someone played a triplet paired wit a single card we'll assume he/she has no more cards that are the
+            # same as the single
+            singles = []
+            if len(tripletcards) > 0 and len(paircards) == 0:
+                for card in tripletcards:
+                    hand = [*action[1]]
+                    for _ in range(3):
+                        hand.remove(card)
+                    for card_in_hand in hand:
+                        singles.append(card_in_hand)
+
+                for card in singles:
+                    while card in remaining_cards:
+                        other_hands_strings[(INDICES[pid][action[0]] + 1) % 2].append(card)
+                        remaining_cards.remove(card)
+                        other_card_amount[(INDICES[pid][action[0]] + 1) % 2] -= 1
+
     np.random.shuffle(remaining_cards)
     other_hands_strings[0].extend(remaining_cards[:other_card_amount[0]])
     other_hands_strings[1].extend(remaining_cards[other_card_amount[0]:])
-
+    #print(other_hands_strings)
     return make_hand(other_hands_strings)
+
+
+def extract_same_cards(hand, amount):
+    cardcount = [0] * 15
+    for card in hand:
+        cardcount[CARD_RANK_STR_INDEX[card]] += 1
+
+    samecards = []  # contains the card of which there was a pair in the given hand
+
+    for card in CARD_RANK_STR:
+        if cardcount[CARD_RANK_STR_INDEX[card]] == amount:
+            samecards.append(card)
+
+    return samecards
+
+
+def get_pairs(hand):
+    return extract_same_cards(hand, 2)
+
+
+def get_triplets(hand):
+    return extract_same_cards(hand, 3)
 
 
 def generate_random_hands_for_opponents(state):
