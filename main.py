@@ -53,6 +53,7 @@ def test_generate_smart_hands_for_opponents2():
                          'others_hand': '899JQKA2B', 'trace': [(2, "777888JQ"), (1, "99")]}}
     generate_smart_hands_for_opponents(state)
 
+
 def test_generate_smart_hands_for_opponents3():
     state = {'raw_obs': {'num_cards_left': [4, 4, 5], 'self': 1, 'current_hand': '3456',
                          'others_hand': '899JQKAAB', 'trace': [(0, "KKK8"), (2, "AA")]}}
