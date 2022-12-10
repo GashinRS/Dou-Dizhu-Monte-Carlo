@@ -5,7 +5,8 @@ import numpy as np
 from rlcard.games.base import Card
 from rlcard.games.doudizhu.player import DoudizhuPlayer
 from rlcard.games.doudizhu.judger import DoudizhuJudger
-from rlcard.games.doudizhu.utils import cards2str, get_gt_cards, ACTION_2_ID, doudizhu_sort_str, CARD_RANK_STR_INDEX, CARD_RANK_STR
+from rlcard.games.doudizhu.utils import cards2str, get_gt_cards, ACTION_2_ID, doudizhu_sort_str, CARD_RANK_STR_INDEX, \
+    CARD_RANK_STR
 
 from agents.custom_agent import CustomAgent
 from agents.min_agent import MinAgent
@@ -112,7 +113,7 @@ def generate_smart_hands_for_opponents(state):
     np.random.shuffle(remaining_cards)
     other_hands_strings[0].extend(remaining_cards[:other_card_amount[0]])
     other_hands_strings[1].extend(remaining_cards[other_card_amount[0]:])
-    #print(other_hands_strings)
+    # print(other_hands_strings)
     return make_hand(other_hands_strings)
 
 
@@ -160,7 +161,6 @@ class Node:
         self.children = []
         self.visits = 0
         self.value = 0
-        self.game_over = 1 # 1 if game is not over when doing this action
 
 
 class DAgent(CustomAgent):
@@ -176,7 +176,6 @@ class DAgent(CustomAgent):
         self.uct_const = uct_const
         self.rollouts = rollouts
         self.default_agent = default_agent
-        self.debug = 0
 
     def simulate_rollouts(self, state):
         # other_players_index = OTHER_PLAYERS[self.env.game.state['self']]
@@ -188,8 +187,6 @@ class DAgent(CustomAgent):
         # rollout_depth = self.env.run_for_depth(self.max_depth, state, self.env.game.state['self'])
 
         i = 0
-        self.debug += 1
-        print(self.debug)
         while i < self.max_depth and not self.env.game.is_over():
             state, pid = self.env.step(self.default_agent.step(state))
             i += 1
@@ -283,10 +280,7 @@ class DAgent(CustomAgent):
             self.env.game.players[other_players_index[i]].set_current_hand(other_hands_random[i])
 
         root = Node(None, None)
-        potatosaladondfireisverysadbecauseiwantedtoeatthepotatosaladandnowicantsadge = 0
         for _ in range(self.rollouts):
-            # print(potatosaladondfireisverysadbecauseiwantedtoeatthepotatosaladandnowicantsadge)
-            potatosaladondfireisverysadbecauseiwantedtoeatthepotatosaladandnowicantsadge += 1
             """ 
             Selection: select a leaf node from the tree using exploration and exploitation.
             """
@@ -295,9 +289,9 @@ class DAgent(CustomAgent):
             """
             Expansion: expand selected node by all possibles plays.
             """
+            test_state = self.env.game.get_state(self.env.game.round.current_player)
             actions = self.env.game.state['actions']
             for _ in range(self.max_depth):
-                # TODO maybe use numpy for optimisation
                 node.children.append(Node(node, random.choice(actions)))
 
             """
@@ -305,12 +299,6 @@ class DAgent(CustomAgent):
             """
             node = random.choice(node.children)
             state, pid = self.env.step(node.action, True)
-
-            while self.env.game.is_over():
-                node.game_over = 0
-                node = random.choice(node.children)
-                state, pid = self.env.step(node.action, True)
-
             score = self.simulate_rollouts(state)
 
             """
@@ -336,12 +324,11 @@ class DAgent(CustomAgent):
                 to_play_node = child
 
         return self.ACTION_2_ID[to_play_node.action]
-        # return to_play_node.action
 
     def uct(self, node):
         """Upper Confidence Bound for trees formule"""
         if node.visits > 0 and node.parent is not None:
-            return (node.value + 2 * self.uct_const * np.sqrt(2 * np.log(node.parent.visits) / node.visits)) * node.game_over
+            return node.value + 2 * self.uct_const * np.sqrt(2 * np.log(node.parent.visits) / node.visits)
         else:
             return np.inf
 
