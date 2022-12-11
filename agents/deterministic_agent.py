@@ -5,7 +5,8 @@ import numpy as np
 from rlcard.games.base import Card
 from rlcard.games.doudizhu.player import DoudizhuPlayer
 from rlcard.games.doudizhu.judger import DoudizhuJudger
-from rlcard.games.doudizhu.utils import cards2str, get_gt_cards, ACTION_2_ID, doudizhu_sort_str, CARD_RANK_STR_INDEX, CARD_RANK_STR
+from rlcard.games.doudizhu.utils import cards2str, get_gt_cards, ACTION_2_ID, doudizhu_sort_str, CARD_RANK_STR_INDEX, \
+    CARD_RANK_STR
 
 from agents.custom_agent import CustomAgent
 from agents.min_agent import MinAgent
@@ -112,7 +113,7 @@ def generate_smart_hands_for_opponents(state):
     np.random.shuffle(remaining_cards)
     other_hands_strings[0].extend(remaining_cards[:other_card_amount[0]])
     other_hands_strings[1].extend(remaining_cards[other_card_amount[0]:])
-    #print(other_hands_strings)
+    # print(other_hands_strings)
     return make_hand(other_hands_strings)
 
 
