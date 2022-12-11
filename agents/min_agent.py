@@ -18,5 +18,9 @@ class MinAgent(CustomAgent):
         return min(list(state['legal_actions'].keys()))
         # return testraw
 
+    @staticmethod
+    def step_raw(state):
+        return state['raw_legal_actions'][0]
+
     def eval_step(self, state):
         return self.step(state), []
