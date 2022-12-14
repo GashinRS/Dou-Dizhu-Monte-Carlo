@@ -9,7 +9,7 @@ from rlcard.utils import (
     get_device,
 )
 
-from game.player_agent import PlayerAgent
+from player_agent import PlayerAgent
 
 
 SCREENSIZE = (1300, 900)
@@ -43,8 +43,8 @@ def main():
     player_agent = PlayerAgent()
 
     # setting agents and starting env. player_id has to be the index of the player in the agents array
-    player_id = 1
-    env.set_agents([dmc_landlord, player_agent, da_agent_peasant])
+    player_id = 0
+    env.set_agents([player_agent, dqn_peasant1, dqn_peasant2])
     state, pid = env.reset()
 
     # init pygame and resources
@@ -94,17 +94,6 @@ def main():
     while running:
 
         surface.blit(background, (0, 0))
-        if env.game.is_over():
-            if player_id == env.game.winner_id:
-                surface.blit(victory_text, victory_text_rect)
-            else:
-                surface.blit(defeat_text, defeat_text_rect)
-        else:
-
-            if pid == player_id:
-                state, pid = env.step(env.agents[pid].step(state), True)
-            else:
-                state, pid = env.step(env.agents[pid].step(state))
 
         if player_id == 0:
             surface.blit(peasant, (10, 10))
@@ -117,6 +106,15 @@ def main():
             surface.blit(landlord, (SCREENSIZE[0] - 80, 10))
         surface.blit(large_font.render(str(env.game.state['num_cards_left'][player_id-1]), True, (0, 0, 0)), (10, 90))
         surface.blit(large_font.render(str(env.game.state['num_cards_left'][player_id - 2]), True, (0, 0, 0)), (SCREENSIZE[0] - 80, 90))
+
+        if pid == (player_id + 1) % 3:
+            pygame.draw.polygon(surface, color=(239, 245, 66), points=[(SCREENSIZE[0] - 150, 10), (SCREENSIZE[0] - 150, 20), (SCREENSIZE[0] - 140, 15)])
+        elif pid == (player_id + 2) % 3:
+            pygame.draw.polygon(surface, color=(239, 245, 66), points=[(150, 10), (150, 20), (140, 15)])
+        else:
+            pygame.draw.polygon(surface, color=(239, 245, 66), points=[(SCREENCENTER[0] - 5, SCREENSIZE[1] - 200),
+                                                                       (SCREENCENTER[0] + 5, SCREENSIZE[1] - 200),
+                                                                       (SCREENCENTER[0], SCREENSIZE[1] - 190)])
 
         last_plays_by_player = ["", "", ""]
         last_3_plays = []
@@ -145,6 +143,9 @@ def main():
         last_play = ""
         j = 0
         while (last_play == "" or last_play == "pass") and j < len(last_3_plays):
+            if j == 2 and last_play == "pass":
+                last_play = ""
+                break
             last_play = last_3_plays[j][1]
             j += 1
 
@@ -155,6 +156,18 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+        if env.game.is_over():
+            if player_id == env.game.winner_id:
+                surface.blit(victory_text, victory_text_rect)
+            else:
+                surface.blit(defeat_text, defeat_text_rect)
+        else:
+            pygame.display.update()
+            if pid == player_id:
+                state, pid = env.step(env.agents[pid].step(state), True)
+            else:
+                state, pid = env.step(env.agents[pid].step(state))
 
         pygame.display.update()
 
