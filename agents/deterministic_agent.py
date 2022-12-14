@@ -284,6 +284,9 @@ class DAgent(CustomAgent):
         Returns:
             action (int): The action predicted (randomly chosen) by the random agent
         """
+        if len(self.env.game.state["trace"]) == 0:
+            return self.default_agent.step(state)
+
         og_state = state
 
         self.pid = self.env.get_player_id()
