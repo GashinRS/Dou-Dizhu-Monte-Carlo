@@ -156,5 +156,68 @@ def set_plt(x, y, xname, yname, plotname, output):
     plt.clf()
 
 
+def plots():
+    plt.show()
+    # %%
+    landlord = [.78, .69, .59, .31]
+    peasant = [.83, .79, .48, .17]
+
+    barWidth = 0.25
+    fig = plt.subplots(figsize=(12, 8))
+
+    # Set position of bar on X axis
+    br1 = np.arange(len(landlord))
+    br2 = [x + barWidth for x in br1]
+    br3 = [x + barWidth for x in br2]
+
+    # Make the plot
+
+    plt.bar(br1, landlord, color='r', width=barWidth,
+            edgecolor='grey', label='Landlord')
+    plt.bar(br2, peasant, color='b', width=barWidth,
+            edgecolor='grey', label='Peasant')
+
+    # Adding Xticks
+    plt.title("MCA win rates als landlord en peasant", fontweight='bold', fontsize=15)
+    plt.xlabel('opponent(s)', fontweight='bold', fontsize=15)
+    plt.ylabel('Win Rate', fontweight='bold', fontsize=15)
+    plt.xticks([r + barWidth / 2 for r in range(len(landlord))],
+               ['random', 'DQN', 'minimum', 'DMC'])
+
+    plt.legend()
+    plt.savefig("grafieken/potatoaganet.png")
+
+    plt.savefig("grafieken/potatoaganet.png")
+    # %%
+    landlord = [.382, .779, .925]
+    peasant = [.636, .893, .946]
+
+    barWidth = 0.25
+    fig = plt.subplots(figsize=(12, 8))
+
+    # Set position of bar on X axis
+    br1 = np.arange(len(landlord))
+    br2 = [x + barWidth for x in br1]
+    br3 = [x + barWidth for x in br2]
+
+    # Make the plot
+
+    plt.bar(br1, landlord, color='r', width=barWidth,
+            edgecolor='grey', label='Landlord')
+    plt.bar(br2, peasant, color='b', width=barWidth,
+            edgecolor='grey', label='Peasant')
+
+    # Adding Xticks
+    plt.title("Win rates van verschillende agents tegen random", fontweight='bold', fontsize=15)
+    plt.xlabel('opponent(s)', fontweight='bold', fontsize=15)
+    plt.ylabel('Win Rate', fontweight='bold', fontsize=15)
+    plt.xticks([r + barWidth / 2 for r in range(len(landlord))],
+               ['DQN', 'minimum', 'DQN'])
+
+    plt.legend()
+    plt.savefig("grafieken/agents.png")
+
+
 if __name__ == "__main__":
     main()
+    # plots()
