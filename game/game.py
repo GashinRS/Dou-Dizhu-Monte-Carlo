@@ -1,16 +1,14 @@
 import pygame
 import rlcard
-from rlcard.agents import RandomAgent
-import numpy as np
 import torch
-from agents.deterministic_agent import DAgent, generate_smart_hands_for_opponents
-from agents.min_agent import MinAgent
+from rlcard.agents import RandomAgent
 from rlcard.utils import (
     get_device,
 )
 
+from agents.deterministic_agent import DAgent
+from agents.min_agent import MinAgent
 from player_agent import PlayerAgent
-
 
 SCREENSIZE = (1300, 900)
 SCREENCENTER = (SCREENSIZE[0]/2, SCREENSIZE[1]/2 - 200)
@@ -35,16 +33,16 @@ def main():
     random_agent = RandomAgent(num_actions=env.num_actions)
     min_agent = MinAgent()
 
-    da_agent_landlord = DAgent(env=env, max_depth=3, num_trees=3, uct_const=1, rollouts=100, default_agent=MinAgent(),
+    mc_agent_landlord = DAgent(env=env, max_depth=3, num_trees=3, uct_const=1, rollouts=100, default_agent=MinAgent(),
                                is_peasant=False)
-    da_agent_peasant = DAgent(env=env, max_depth=3, num_trees=3, uct_const=1, rollouts=100, default_agent=MinAgent(),
+    mc_agent_peasant = DAgent(env=env, max_depth=3, num_trees=3, uct_const=1, rollouts=100, default_agent=MinAgent(),
                               is_peasant=True)
 
     player_agent = PlayerAgent()
 
     # setting agents and starting env. player_id has to be the index of the player in the agents array
-    player_id = 0
-    env.set_agents([player_agent, dqn_peasant1, dqn_peasant2])
+    player_id = 1
+    env.set_agents([dmc_landlord, player_agent, min_agent])
     state, pid = env.reset()
 
     # init pygame and resources

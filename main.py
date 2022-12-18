@@ -39,6 +39,12 @@ def main():
     # set_plt(["landlord", "peasant"], [93, 87], "MinAgent as landlord\nDA as peasants", "Games Won",
     #         f"{93 + 87} Games played", "plots/minvsda.png")
 
+    # set_plt(["random", "dqn", "MinAgent", "dmc"], [.78, .69, .59, .31],
+    #         "Winrates of Deterministic MTSC agent as landlord", "Win rate", f"", "plots/vsalllandlord.png")
+    #
+    # set_plt(["random", "dqn", "MinAgent", "dmc"], [.83, .79, .48, .17],
+    #         "Winrates of Deterministic MTSC agent as peasants", "Win rate", f"", "plots/vsallaspeasants.png")
+
 
 
 
@@ -83,7 +89,7 @@ def test_game(env, agent_landlord, agent_peasant1, agent_peasant2, its):
     for i in range(its):
         trajectories, payoffs = env.run()
         scores = np.add(scores, payoffs)
-        print(f"{i}: {[scores]}")
+        # print(f"{i}: {[scores]}")
     print(scores)
 
 
@@ -115,23 +121,34 @@ def test_agents():
 
     random_agent = RandomAgent(num_actions=env.num_actions)
 
-    da_agent_landlord = DAgent(env=env, max_depth=3, num_trees=3, uct_const=1, rollouts=200, default_agent=MinAgent(),
+    mc_agent_landlord = DAgent(env=env, max_depth=3, num_trees=3, uct_const=1, rollouts=200, default_agent=MinAgent(),
                                is_peasant=False)
-    da_agent_peasant = DAgent(env=env, max_depth=3, num_trees=3, uct_const=1, rollouts=200, default_agent=MinAgent(),
+    mc_agent_peasant = DAgent(env=env, max_depth=3, num_trees=3, uct_const=1, rollouts=200, default_agent=MinAgent(),
                               is_peasant=True)
 
-    test_game(env, da_agent_landlord, dqn_peasant1, dqn_peasant2, 200)
+    print("dqn vs rand")
+    test_game(env, dqn_landlord, random_agent, random_agent, 1000)
+    print("rand vs dqn")
+    test_game(env, random_agent, dqn_peasant1, dqn_peasant2, 1000)
+    print("min vs rand")
+    test_game(env, MinAgent(), random_agent, random_agent, 1000)
+    print("rand vs min")
+    test_game(env, random_agent, MinAgent(), MinAgent(), 1000)
+    print("dmc vs rand")
+    test_game(env, dmc_landlord, random_agent, random_agent, 1000)
+    print("rand vs dmc")
+    test_game(env, random_agent, dmc_peasant1, dmc_peasant2, 1000)
     # test_game(env, dmc_pretrained_landlord, dmc_peasant1, dmc_peasant2, 100)
     # test_game(env, dmc_landlord, dmc_pretrained_peasant1, dmc_pretrained_peasant1, 100)
-    # test_game(env, da_agent_landlord, MinAgent(), MinAgent(), 200)
+    # test_game(env, mc_agent_landlord, MinAgent(), MinAgent(), 200)
     # test_game(env, dmc_landlord, random_agent, random_agent, 1000)
     # test_game(env, dqn_landlord, random_agent, random_agent, 1000)
 
 
 def set_plt(x, y, xname, yname, plotname, output):
-    plt.rcParams["figure.figsize"] = (15, 20)
+    plt.rcParams["figure.figsize"] = (40, 20)
     plt.rcParams.update({'font.size': 31})
-    plt.bar(x, y)
+    plt.bar(x, y, width=0.4)
     plt.title(plotname, fontsize=40)
     plt.xlabel(xname, fontsize=40)
     plt.ylabel(yname, fontsize=40)
