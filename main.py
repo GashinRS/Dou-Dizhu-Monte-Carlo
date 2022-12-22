@@ -12,7 +12,8 @@ from rlcard.utils import (
 
 
 def main():
-    test_agents()
+    #test_agents()
+    plotgraph()
     # set_plt(["landlord", "peasant"], [398, 602], "DQN as landlord\nRandomAgent as peasants", "Games Won", "1000 Games played", "plots/dqn_perf.png")
     # set_plt(["landlord", "peasant"], [89, 194], "DA as landlord\nDMC as peasants", "Games Won",
     #         f"{89 + 194} Games played", "plots/davsdmc.png")
@@ -156,7 +157,7 @@ def set_plt(x, y, xname, yname, plotname, output):
     plt.clf()
 
 
-def plots():
+def plotgraph():
     plt.show()
     # %%
     landlord = [.78, .69, .59, .31]
@@ -178,7 +179,7 @@ def plots():
             edgecolor='grey', label='Peasant')
 
     # Adding Xticks
-    plt.title("MCA win rates als landlord en peasant", fontweight='bold', fontsize=15)
+    #plt.title("MCA win rates als landlord en peasant", fontweight='bold', fontsize=15)
     plt.xlabel('opponent(s)', fontweight='bold', fontsize=15)
     plt.ylabel('Win Rate', fontweight='bold', fontsize=15)
     plt.xticks([r + barWidth / 2 for r in range(len(landlord))],
@@ -208,11 +209,11 @@ def plots():
             edgecolor='grey', label='Peasant')
 
     # Adding Xticks
-    plt.title("Win rates van verschillende agents tegen random", fontweight='bold', fontsize=15)
+    #plt.title("Win rates van verschillende agents tegen random", fontweight='bold', fontsize=15)
     plt.xlabel('opponent(s)', fontweight='bold', fontsize=15)
     plt.ylabel('Win Rate', fontweight='bold', fontsize=15)
     plt.xticks([r + barWidth / 2 for r in range(len(landlord))],
-               ['DQN', 'minimum', 'DQN'])
+               ['DQN', 'minimum', 'DMC'])
 
     plt.legend()
     plt.savefig("grafieken/agents.png")
