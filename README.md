@@ -6,4 +6,4 @@ card game. Our bot is based on the [Monte Carlo Tree Search](https://en.wikipedi
 and was made with [RLCard](https://rlcard.org/). We also made a simple visual interface to play against the bot.
 
 For more detailed information about our implementaion, we also wrote a [paper](https://github.com/GashinRS/Dou-Dizhu-Monte-Carlo/blob/main/verslag.pdf). 
-Please note however that this paper is writted in Dutch.
+Please note however that this paper is written in Dutch.
